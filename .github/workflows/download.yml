@@ -1,0 +1,56 @@
+name: Download YouTube Video
+
+on:
+  workflow_dispatch:
+    inputs:
+      video_url:
+        description: 'YouTube video URL'
+        required: true
+        type: string
+      quality:
+        description: 'Preferred video quality'
+        required: true
+        type: choice
+        default: '1080'
+        options:
+          - 1080
+          - 720
+          - 480
+          - 360
+      cookies:
+        description: '(Optional) Netscape cookies file (base64 encoded)'
+        required: false
+        type: string
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Install yt-dlp
+        run: pip install -U yt-dlp
+
+      - name: Decode cookies (if provided)
+        if: ${{ github.event.inputs.cookies != '' }}
+        run: echo "${{ github.event.inputs.cookies }}" | base64 -d > cookies.txt
+
+      - name: Run downloader
+        env:
+          VIDEO_URL: ${{ github.event.inputs.video_url }}
+          QUALITY: ${{ github.event.inputs.quality }}
+          COOKIES_FILE: ${{ github.event.inputs.cookies != '' && 'cookies.txt' || '' }}
+        run: go run main.go
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: downloaded-video
+          path: download/video.zip

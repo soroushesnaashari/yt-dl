@@ -25,6 +25,8 @@ on:
 jobs:
   download:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write          # needed to push commits
 
     steps:
       - name: Checkout code
@@ -57,6 +59,11 @@ jobs:
         if: ${{ github.event.inputs.cookies != '' }}
         run: printf '%s\n' "${{ github.event.inputs.cookies }}" > cookies.txt
 
+      - name: Clean previous downloads
+        run: |
+          rm -rf download/*
+          echo "Download folder cleaned"
+
       - name: Run downloader
         env:
           VIDEO_URL: ${{ github.event.inputs.video_url }}
@@ -65,8 +72,17 @@ jobs:
           PROXY_ADDRESS: socks5://127.0.0.1:1080
         run: go run main.go
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: downloaded-video
-          path: download/video.zip
+      - name: Split zip into 90 MB chunks
+        run: |
+          cd download
+          split -b 90M -d video.zip video.zip.
+          rm video.zip   # remove original after splitting
+          ls -la         # verify chunks
+
+      - name: Commit chunks to repository
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add download/
+          git commit -m "Downloaded video (split into chunks)" || echo "No changes to commit"
+          git push

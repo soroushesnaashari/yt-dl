@@ -27,6 +27,7 @@ func main() {
 	// Prepare yt-dlp arguments
 	args := []string{
 		"--no-playlist",
+		"--extractor-args", "youtube:player_client=ios,android",
 		"-f", formatStr,
 		"--merge-output-format", "mp4",
 		"-o", "%(title).100s [%(id)s].%(ext)s",
@@ -81,10 +82,9 @@ func main() {
 }
 
 // formatSelector builds a yt-dlp format string that tries the chosen
-// quality first, then 1080p, then 720p, then 480p, then 360p, and
-// finally falls back to the best available stream.
+// quality first, then 1080p, then 720p, then 480p, then 360p,
+// and finally falls back to the best available stream.
 func formatSelector(q string) string {
-	// Preferred order, including the primary choice
 	heights := []string{q, "1080", "720", "480", "360"}
 
 	// Deduplicate while preserving order
@@ -97,14 +97,14 @@ func formatSelector(q string) string {
 		}
 	}
 
-	// Build fallback chain: for each resolution, request best video ≤ that height + best audio
+	// Build fallback chain
 	var parts []string
 	for _, h := range unique {
 		parts = append(parts,
 			fmt.Sprintf("bestvideo[height<=%s][ext=mp4]+bestaudio[ext=m4a]", h))
 	}
 
-	// Final fallback: best mp4 with audio, then best of anything
+	// Final fallback
 	finalFallback := "best[ext=mp4]/best"
 	chain := append(parts, finalFallback)
 
@@ -137,7 +137,7 @@ func createZip(zipPath, sourcePath string) error {
 	if err != nil {
 		return err
 	}
-	header.Name = filepath.Base(sourcePath) // store only the filename inside the zip
+	header.Name = filepath.Base(sourcePath)
 	header.Method = zip.Deflate
 
 	writer, err := zipWriter.CreateHeader(header)

@@ -19,13 +19,19 @@ func main() {
 	// Always download the best possible quality
 	formatStr := "bestvideo+bestaudio/best"
 
-	// Build yt-dlp arguments
+	// Build yt-dlp arguments with robust flags
 	args := []string{
 		"--no-playlist",
 		"-f", formatStr,
 		"--merge-output-format", "mp4",
 		"-o", "%(title).100s [%(id)s].%(ext)s",
 		"--no-mtime",
+		"--retries", "10",
+		"--fragment-retries", "10",
+		"--concurrent-fragments", "4",
+		"--no-check-certificates",
+		"--prefer-free-formats",
+		"--no-warnings",
 	}
 
 	// Use SOCKS5 proxy if provided (WARP bypass)
@@ -75,6 +81,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	// Delete the original MP4 file (keep only the zip)
 	os.Remove(newPath)
 
 	fmt.Printf("Successfully created: %s\n", zipPath)

@@ -17,7 +17,7 @@ func main() {
 	}
 
 	// Always download the best possible quality
-	formatStr := "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"
+	formatStr := "bestvideo+bestaudio/best"
 
 	// Build yt-dlp arguments
 	args := []string{

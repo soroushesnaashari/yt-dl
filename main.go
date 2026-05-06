@@ -22,7 +22,6 @@ func main() {
 	// Build yt-dlp arguments
 	args := []string{
 		"--no-playlist",
-		"--extractor-args", "youtube:player_client=ios,android",
 		"-f", formatStr,
 		"--merge-output-format", "mp4",
 		"-o", "%(title).100s [%(id)s].%(ext)s",

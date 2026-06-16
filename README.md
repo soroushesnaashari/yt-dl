@@ -15,7 +15,7 @@ Download any YouTube video in best quality directly into your GitHub repository.
 
 ### Reassemble the video
 **macOS / Linux** (Terminal):  
-`cat download/video.zip.0* > video.zip`  
+`cat video.zip.0* > video.zip`  
 Then unzip `video.zip`.
 
 **Windows** (Command Prompt):  
